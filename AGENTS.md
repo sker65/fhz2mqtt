@@ -28,8 +28,9 @@ behaviour comes from [mqtt-interfaces-core](https://github.com/hobbyquaker/mqtt-
 
 1. Bump `version` in `package.json` (`npm version --no-git-tag-version <x.y.z>` keeps the lockfile in sync) and add a
    `## x.y.z` section to `CHANGELOG.md`.
-2. Commit, then `git tag vx.y.z && git push && git push --tags`.
+2. Commit, then tag `x.y.z` or `vx.y.z` and push the tag (or create the release on GitHub with a new tag).
 3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs lint and tests, publishes to npm
    (secret `NPM_TOKEN`, with provenance) and creates the GitHub release with notes from `.github/release-notes.js`
-   (CHANGELOG section plus the commits since the previous tag). A failed run can be repeated for an existing tag via
+   (CHANGELOG section plus the commits since the previous tag); a release created by hand only gets its notes
+   replaced. A failed run can be repeated for an existing tag via
    _Run workflow_.

@@ -2,11 +2,11 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v*', '[0-9]*']
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing tag to release (e.g. v1.0.0)'
+        description: 'Existing tag to release (e.g. 1.0.0 or v1.0.0)'
         required: true
 
 permissions:
@@ -28,8 +28,8 @@ jobs:
       - name: Tag matches package.json version
         run: |
           TAG="${{ inputs.tag || github.ref_name }}"
-          VERSION="v$(node -p "require('./package.json').version")"
-          if [ "$TAG" != "$VERSION" ]; then
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "${TAG#v}" != "$VERSION" ]; then
             echo "::error::tag $TAG does not match package.json version $VERSION"
             exit 1
           fi
@@ -59,4 +59,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ inputs.tag || github.ref_name }}"
-          gh release create "$TAG" --title "$TAG" --notes-file /tmp/notes.md --verify-tag
+          # a release created by hand on GitHub only gets the generated notes
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --notes-file /tmp/notes.md
+          else
+            gh release create "$TAG" --title "$TAG" --notes-file /tmp/notes.md --verify-tag
+          fi
