@@ -1,0 +1,67 @@
+{
+  "name": "fhz2mqtt",
+  "version": "0.1.0",
+  "description": "Interface between an ELV FHZ1000 PC / FHZ1300 PC (FHT80b thermostats) and MQTT",
+  "type": "module",
+  "main": "index.js",
+  "preferGlobal": true,
+  "bin": {
+    "fhz2mqtt": "index.js"
+  },
+  "files": [
+    "index.js",
+    "config.js",
+    "lib/"
+  ],
+  "engines": {
+    "node": "^20.19 || ^22.12 || >=24"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write . && eslint --fix .",
+    "test": "node --test"
+  },
+  "keywords": [
+    "mqtt",
+    "smarthome",
+    "mqtt-smarthome",
+    "mqtt-interfaces",
+    "home-automation",
+    "home-assistant",
+    "FHZ1300",
+    "FHZ1000",
+    "FHT80b",
+    "868"
+  ],
+  "license": "GPL-2.0",
+  "mqttInterfaces": {
+    "spec": "2.0",
+    "envPrefix": "FHZ2MQTT",
+    "needs": [
+      "serial"
+    ],
+    "serviceExtra": [
+      "SupplementaryGroups=dialout"
+    ]
+  },
+  "dependencies": {
+    "mqtt-interfaces-core": "^0.15.2",
+    "serialport": "^13.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sker65/fhz2mqtt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sker65/fhz2mqtt/issues"
+  },
+  "homepage": "https://github.com/sker65/fhz2mqtt"
+}

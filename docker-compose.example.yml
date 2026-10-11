@@ -1,0 +1,17 @@
+# Example: copy to docker-compose.yml (git-ignored) and adjust the device path and broker.
+# The FHZ shows up as /dev/serial/by-id/usb-ELV_AG_ELV_FHZ_1300_PC_<serial>-if00-port0.
+services:
+  fhz:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    devices:
+      - /dev/serial/by-id/usb-ELV_AG_ELV_FHZ_1300_PC_XXXXXXXX-if00-port0:/dev/ttyUSB0
+    group_add:
+      - dialout # or the numeric gid of the tty device on the host
+    environment:
+      FHZ2MQTT_MQTT_URL: mqtt://localhost
+      FHZ2MQTT_NAME: fhz
+      FHZ2MQTT_SERIALPORT: /dev/ttyUSB0
+      # FHZ2MQTT_ONLY: 1a2b,3c4d
+      # FHZ2MQTT_FHT_CODE: 4f # writes a new central code: every FHT must pair again
