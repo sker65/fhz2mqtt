@@ -23,3 +23,13 @@ behaviour comes from [mqtt-interfaces-core](https://github.com/hobbyquaker/mqtt-
   outside a major release.
 - No site data in the repo: example addresses only (`1a2b`), no device serials, no room names.
 - Log raw traffic at `debug` with `fhz <` / `fhz >` prefixes.
+
+## Release
+
+1. Bump `version` in `package.json` (`npm version --no-git-tag-version <x.y.z>` keeps the lockfile in sync) and add a
+   `## x.y.z` section to `CHANGELOG.md`.
+2. Commit, then `git tag vx.y.z && git push && git push --tags`.
+3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs lint and tests, publishes to npm
+   (secret `NPM_TOKEN`, with provenance) and creates the GitHub release with notes from `.github/release-notes.js`
+   (CHANGELOG section plus the commits since the previous tag). A failed run can be repeated for an existing tag via
+   _Run workflow_.
