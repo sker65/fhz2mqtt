@@ -299,6 +299,8 @@ function open() {
         adapter.setDeviceConnected(false);
         queue.length = 0;
         fhtQueue.resetSent(); // the FHZ may have lost its buffer: send pending commands again
+        // a replugged FHZ reports a different free size at first (42 instead of 74 on an FHZ1300)
+        bufferEmpty = 0;
         bufferLowSince = null;
         scheduleReconnect();
     });
