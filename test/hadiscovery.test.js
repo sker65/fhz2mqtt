@@ -23,3 +23,8 @@ test('discoveryModel without JSON payloads', () => {
     assert.equal(fht.components.climate.curr_temp_tpl, '{{ value }}');
     assert.equal(fht.components.battery_low.val_tpl, "{{ 'ON' if value == 'true' else 'OFF' }}");
 });
+
+test('FHT devices use the default bridge availability', () => {
+    const [, fht] = discoveryModel({name: 'fhz', adapter: 'fhz2mqtt', addresses: ['1234']});
+    assert.equal(fht.availability, undefined);
+});
