@@ -13,5 +13,6 @@ services:
       FHZ2MQTT_MQTT_URL: mqtt://localhost
       FHZ2MQTT_NAME: fhz
       FHZ2MQTT_SERIALPORT: /dev/ttyUSB0
+      TZ: Europe/Berlin # local time: the FHZ clock and FHT sync-time are set from it
       # FHZ2MQTT_ONLY: 1a2b,3c4d
       # FHZ2MQTT_FHT_CODE: 4f # writes a new central code: every FHT must pair again
