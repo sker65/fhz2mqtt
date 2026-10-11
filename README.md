@@ -35,12 +35,15 @@ it) first.
 
 ## Options
 
-| Option             | Env                   | Default        | Meaning                                                     |
-| ------------------ | --------------------- | -------------- | ----------------------------------------------------------- |
-| `-s, --serialport` | `FHZ2MQTT_SERIALPORT` | `/dev/ttyUSB0` | FHZ serial port, or `auto` (`/dev/serial/by-id/*ELV*FHZ*`)  |
-| `--fht-code`       | `FHZ2MQTT_FHT_CODE`   | –              | central code (2 hex digits) written on connect; unset: keep |
-| `--only`           | `FHZ2MQTT_ONLY`       | –              | comma-separated FHT addresses to handle, others are ignored |
-| `-n, --name`       | `FHZ2MQTT_NAME`       | `fhz`          | topic prefix                                                |
+| Option               | Env                         | Default        | Meaning                                                             |
+| -------------------- | --------------------------- | -------------- | ------------------------------------------------------------------- |
+| `-s, --serialport`   | `FHZ2MQTT_SERIALPORT`       | `/dev/ttyUSB0` | FHZ serial port, or `auto` (`/dev/serial/by-id/*ELV*FHZ*`)          |
+| `--fht-code`         | `FHZ2MQTT_FHT_CODE`         | –              | central code (2 hex digits) written on connect; unset: keep         |
+| `--only`             | `FHZ2MQTT_ONLY`             | –              | comma-separated FHT addresses to handle, others are ignored         |
+| `--fht-buffer-check` | `FHZ2MQTT_FHT_BUFFER_CHECK` | `true`         | ask the FHZ for its free FHT buffer, hold what doesn't fit          |
+| `--fht-retries`      | `FHZ2MQTT_FHT_RETRIES`      | `2`            | resend unconfirmed FHT commands at most this often (0 = off, max 5) |
+| `--fht-retry-after`  | `FHZ2MQTT_FHT_RETRY_AFTER`  | `240`          | seconds to wait for the confirmation before resending (min 120)     |
+| `-n, --name`         | `FHZ2MQTT_NAME`             | `fhz`          | topic prefix                                                        |
 
 Plus the shared options of mqtt-interfaces-core (`-u`, `--ha-discovery`, `-v`, ...; see `--help`).
 
@@ -81,9 +84,20 @@ paired again.
 
 ## Sending limits
 
-Frames to the FHZ are spaced 250 ms apart (the FHZ drops faster ones). The FHZ itself queues FHT
-commands until the thermostat's receive window (about every two minutes). Its FHT buffer is
-small: do not fire dozens of commands at once.
+Frames to the FHZ are spaced 250 ms apart (the FHZ drops faster ones). The FHZ queues FHT
+commands in a small buffer until the thermostat's receive window (about every two minutes) and
+silently drops new ones when the buffer is full. A message takes 3 + 2 x (FHT commands) bytes.
+
+fhz2mqtt therefore keeps its own FHT queue, like FHEM's `fhtsoftbuffer`:
+
+- **Buffer check** (`--fht-buffer-check`): before sending, the bridge asks the FHZ how many
+  bytes are free and sends only what fits, oldest first. The rest waits; the queue is checked
+  every 30 s.
+- **Retries** (`--fht-retries`, `--fht-retry-after`): the FHT confirms each received command.
+  A command without confirmation is resent after `--fht-retry-after` seconds, at most
+  `--fht-retries` times, then dropped with a warning in the log. `0` sends once and only logs.
+- A newer command of the same kind for the same thermostat (e.g. `desired-temp`) replaces a
+  pending one instead of queueing behind it.
 
 ## License
 

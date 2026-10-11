@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- FHT command queue like FHEM's `fhtsoftbuffer`: checks the FHZ's free FHT buffer before sending
+  (`--fht-buffer-check`), resends unconfirmed commands (`--fht-retries`, `--fht-retry-after`),
+  a newer command replaces a pending one of the same kind.
+- License: MIT.
+
 ## 0.1.0
 
 - First release: FHZ1000 PC / FHZ1300 PC serial protocol, FHT80b status and commands

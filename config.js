@@ -14,6 +14,21 @@ export const OPTIONS = {
         type: 'string',
         describe: 'central code (2 hex digits) written to the FHZ on connect; unset keeps the paired one',
     },
+    'fht-buffer-check': {
+        type: 'boolean',
+        describe: "ask the FHZ for its free FHT buffer before sending and hold commands that don't fit",
+        default: true,
+    },
+    'fht-retries': {
+        type: 'number',
+        describe: 'resend an FHT command the thermostat did not confirm, at most this often (0 = off, max 5)',
+        default: 2,
+    },
+    'fht-retry-after': {
+        type: 'number',
+        describe: 'seconds to wait for the confirmation before resending (min 120)',
+        default: 240,
+    },
     only: {
         type: 'string',
         describe: 'handle only these FHT addresses, e.g. "1a2b,3c4d" (others are neither published nor sent to)',
