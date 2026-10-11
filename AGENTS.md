@@ -30,7 +30,7 @@ behaviour comes from [mqtt-interfaces-core](https://github.com/hobbyquaker/mqtt-
    `## x.y.z` section to `CHANGELOG.md`.
 2. Commit, then tag `x.y.z` or `vx.y.z` and push the tag (or create the release on GitHub with a new tag).
 3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs lint and tests, publishes to npm
-   (trusted publishing via OIDC, fallback secret `NPM_TOKEN`; with provenance) and creates the GitHub release with notes from `.github/release-notes.js`
+   (trusted publishing via OIDC, no token; with provenance) and creates the GitHub release with notes from `.github/release-notes.js`
    (CHANGELOG section plus the commits since the previous tag); a release created by hand only gets its notes
    replaced. A failed run can be repeated for an existing tag via
    _Run workflow_.

@@ -38,10 +38,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      # trusted publishing (OIDC) when configured on npmjs.com, else the NPM_TOKEN secret (can be removed then)
+      # trusted publishing (OIDC): npmjs.com → fhz2mqtt → Settings → Trusted Publisher, release.yml, direct publish allowed
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   github-release:
     runs-on: ubuntu-latest
