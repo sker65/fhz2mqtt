@@ -28,3 +28,8 @@ test('FHT devices use the default bridge availability', () => {
     const [, fht] = discoveryModel({name: 'fhz', adapter: 'fhz2mqtt', addresses: ['1234']});
     assert.equal(fht.availability, undefined);
 });
+
+test('the bridge announces the free FHT buffer', () => {
+    const [bridge] = discoveryModel({name: 'fhz', adapter: 'fhz2mqtt', addresses: []});
+    assert.equal(bridge.components.fhtbuf.stat_t, 'fhz/status/fhtbuf');
+});

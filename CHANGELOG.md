@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+- Retries only if the thermostat was heard after sending; a silent thermostat's command still
+  sits in the FHZ buffer and is not stacked again.
+- Free FHT buffer published as `fhtbuf` (HA diagnostic sensor), polled every 5 minutes, with a
+  warning when it stays occupied while nothing is pending.
+- Compose example: `/dev` mount and cgroup rule, the FHZ survives a replug.
+
 ## 0.2.0
 
 - FHT command queue like FHEM's `fhtsoftbuffer`: checks the FHZ's free FHT buffer before sending

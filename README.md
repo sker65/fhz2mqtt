@@ -96,6 +96,13 @@ fhz2mqtt therefore keeps its own FHT queue, like FHEM's `fhtsoftbuffer`:
 - **Retries** (`--fht-retries`, `--fht-retry-after`): the FHT confirms each received command.
   A command without confirmation is resent after `--fht-retry-after` seconds, at most
   `--fht-retries` times, then dropped with a warning in the log. `0` sends once and only logs.
+  A command is only resent if the thermostat was heard after sending: then the FHZ handed it
+  over and just the confirmation got lost. A silent thermostat has not fetched it yet, and a
+  resend would only stack copies in the FHZ buffer (there is no command to clear it).
+- **Buffer watch:** the free buffer is published as `fhz/status/fhtbuf` (Home Assistant:
+  diagnostic sensor of the bridge) and polled every 5 minutes. If it stays below its empty size
+  for 30 minutes while nothing is pending, the log warns: some thermostat does not fetch its
+  commands.
 - A newer command of the same kind for the same thermostat (e.g. `desired-temp`) replaces a
   pending one instead of queueing behind it.
 

@@ -56,21 +56,41 @@ test('confirm removes the command; one confirmed pair confirms the transmission'
 test('unconfirmed commands are resent at most `retries` times, then expire', () => {
     const q = new FhtQueue({retries: 1, retryAfterMs: 1000});
     q.add('1a2b', data('desired-temp', 19), 'temp');
-    assert.equal(q.take(Infinity, 0).send.length, 1);
+    assert.equal(q.take(Infinity, 10).send.length, 1);
+    q.heard('1a2b', 400);
     assert.equal(q.take(Infinity, 500).send.length, 0, 'not yet');
-    assert.equal(q.take(Infinity, 1000).send[0].sends, 2, 'one retry');
+    assert.equal(q.take(Infinity, 1010).send[0].sends, 2, 'one retry');
+    q.heard('1a2b', 1500);
+    const r = q.take(Infinity, 2010);
+    assert.equal(r.send.length, 0);
+    assert.deepEqual(
+        r.expired.map((e) => e.reason),
+        ['unconfirmed'],
+    );
+    assert.equal(q.length, 0);
+});
+
+test('no resend while the thermostat is silent: the command may still sit in the FHZ buffer', () => {
+    const q = new FhtQueue({retries: 2, retryAfterMs: 1000});
+    q.add('1a2b', data('desired-temp', 19), 'temp');
+    q.take(Infinity, 10);
+    q.heard('1a2b', 5, 'heard before the send does not count');
+    assert.equal(q.hasDue(2000), false);
     const r = q.take(Infinity, 2000);
     assert.equal(r.send.length, 0);
-    assert.equal(r.expired.length, 1);
-    assert.equal(q.length, 0);
+    assert.deepEqual(
+        r.expired.map((e) => e.reason),
+        ['silent'],
+    );
 });
 
 test('retries 0 sends once and expires after the wait', () => {
     const q = new FhtQueue({retries: 0, retryAfterMs: 1000});
     q.add('1a2b', data('desired-temp', 19), 'temp');
-    q.take(Infinity, 0);
+    q.take(Infinity, 10);
+    q.heard('1a2b', 100);
     assert.equal(q.hasDue(5000), false);
-    assert.equal(q.take(Infinity, 5000).expired.length, 1);
+    assert.equal(q.take(Infinity, 5000).expired[0].reason, 'unconfirmed');
 });
 
 test('resetSent sends everything again after a reconnect', () => {

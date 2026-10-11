@@ -33,6 +33,8 @@ const RECONNECT_MS = 10000;
 const DISCOVERY_DELAY_MS = 2000;
 const QUEUE_CHECK_MS = 30000; // FHEM's softbuffer timer
 const FHTBUF_TIMEOUT_MS = 2000;
+const BUFFER_WATCH_MS = 5 * 60000; // poll the free FHT buffer also when nothing is queued
+const BUFFER_STUCK_MS = 30 * 60000; // below its empty size this long with nothing pending: warn
 
 const retries = Number(config.fhtRetries);
 const retryAfter = Number(config.fhtRetryAfter);
@@ -75,6 +77,7 @@ const adapter = createAdapter({
         stopped = true;
         clearTimeout(reconnectTimer);
         clearInterval(queueTimer);
+        clearInterval(bufferTimer);
         if (port?.isOpen) {
             return new Promise((resolve) => port.close(() => resolve()));
         }
@@ -117,8 +120,52 @@ async function handleSet(parts, value) {
  */
 const fhtQueue = new FhtQueue({retries, retryAfterMs: retryAfter * 1000});
 const queueTimer = setInterval(() => pump(), QUEUE_CHECK_MS);
+const bufferTimer = config.fhtBufferCheck ? setInterval(() => watchBuffer(), BUFFER_WATCH_MS) : null;
 let pumping = false;
 let bufferWaiter = null;
+
+/*
+ * Free FHT buffer, published as `fhtbuf`. Its largest value seen is taken as the empty buffer.
+ * Staying below that for long while the bridge waits for nothing means commands are stuck in the
+ * FHZ for a thermostat that does not fetch them (no battery, out of range, not paired).
+ */
+let bufferEmpty = 0;
+let bufferLowSince = null;
+let bufferWarned = false;
+
+function noteBuffer(free, now) {
+    pubStatus('fhtbuf', free);
+    bufferEmpty = Math.max(bufferEmpty, free);
+    if (free >= bufferEmpty || fhtQueue.length) {
+        bufferLowSince = null;
+        bufferWarned = false;
+        return;
+    }
+    bufferLowSince ??= now;
+    if (!bufferWarned && now - bufferLowSince >= BUFFER_STUCK_MS) {
+        bufferWarned = true;
+        log.warn(
+            `fhz FHT buffer: ${bufferEmpty - free} bytes still occupied after ${Math.round(
+                (now - bufferLowSince) / 60000,
+            )} min with nothing pending; a thermostat does not fetch its commands`,
+        );
+    }
+}
+
+async function watchBuffer() {
+    if (pumping || !port?.isOpen) {
+        return;
+    }
+    pumping = true;
+    try {
+        const free = await readFhtBuffer();
+        if (free !== null) {
+            noteBuffer(free, Date.now());
+        }
+    } finally {
+        pumping = false;
+    }
+}
 
 function readFhtBuffer() {
     return new Promise((resolve) => {
@@ -149,11 +196,16 @@ async function pump() {
                 free = Infinity;
             } else {
                 log.debug(`fhz FHT buffer ${free} bytes free, ${fhtQueue.length} queued`);
+                noteBuffer(free, Date.now());
             }
         }
         const {send: due, expired} = fhtQueue.take(free, Date.now());
         for (const e of expired) {
-            log.warn(`fht ${e.address} ${e.label}: no confirmation after ${e.sends} sends, giving up`);
+            log.warn(
+                e.reason === 'silent'
+                    ? `fht ${e.address} ${e.label}: thermostat not heard since sending, not resending (the FHZ still holds it)`
+                    : `fht ${e.address} ${e.label}: no confirmation after ${e.sends} sends, giving up`,
+            );
         }
         for (const e of due) {
             log.info(`fht ${e.address} ${e.label}${e.sends > 1 ? ` (retry ${e.sends - 1})` : ''}`);
@@ -216,6 +268,9 @@ function onFrame(frame) {
         return;
     }
     addSeen(msg.address);
+    if (!msg.fromFhz) {
+        fhtQueue.heard(msg.address, Date.now());
+    }
     if (msg.confirm) {
         for (const e of fhtQueue.confirm(msg.address, msg.cmdRaw, msg.value)) {
             log.debug(`fht ${e.address} ${e.label} confirmed`);
@@ -244,6 +299,7 @@ function open() {
         adapter.setDeviceConnected(false);
         queue.length = 0;
         fhtQueue.resetSent(); // the FHZ may have lost its buffer: send pending commands again
+        bufferLowSince = null;
         scheduleReconnect();
     });
     port.on('error', (err) => log.warn('fhz error:', err.message));
@@ -260,6 +316,9 @@ function open() {
             send(fn, data);
         }
         pump();
+        if (config.fhtBufferCheck) {
+            setTimeout(() => watchBuffer(), 5000);
+        }
     });
 }
 
