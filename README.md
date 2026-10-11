@@ -30,7 +30,8 @@ node index.js -s auto -u mqtt://broker
 
 As a systemd service: `sudo node index.js --install -n fhz -s auto -u mqtt://broker` (instance
 `fhz2mqtt@fhz`, config in `/etc/fhz2mqtt/fhz.env`). For Docker see `Dockerfile` and
-`docker-compose.example.yml`. Only one program can open the FHZ: stop FHEM (or whatever else uses
+`docker-compose.example.yml` (it mounts `/dev`, so a replugged FHZ is found again without a
+restart). Only one program can open the FHZ: stop FHEM (or whatever else uses
 it) first.
 
 ## Options
