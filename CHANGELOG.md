@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1
+
+- Release workflow: GitHub Actions publish to npm (trusted publishing via OIDC, token as fallback)
+  with provenance and create the GitHub release; tags with or without `v`.
+- CI workflow (lint and tests on Node 20, 22, 24); `index.js` is executable; `package.json` names the
+  author. No functional changes.
+
 ## 0.4.0
 
 - `fht/<addr>/last_seen`: time of the last message from the thermostat (at most once a minute),
