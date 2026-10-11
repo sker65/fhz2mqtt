@@ -53,7 +53,8 @@ Plus the shared options of mqtt-interfaces-core (`-u`, `--ha-discovery`, `-v`, .
 - `fhz/connected` — `0` / `1` / `2` (FHZ open)
 - `fhz/status/fht/<addr>/<field>` (retained, `{val, ts, lc}`): `measured_temp`, `desired_temp`,
   `mode` (`AUTO`/`MANU`/`HOLIDAY`/`HOLIDAY_SHORT`), `actuator` (%), `battery_low`, `window_open`,
-  `window_sensor_fault`, `low_temp`, `windowopen_temp`, `day_temp`, `night_temp`, `lowtemp_offset`;
+  `window_sensor_fault`, `low_temp`, `windowopen_temp`, `day_temp`, `night_temp`, `lowtemp_offset`,
+  `last_seen` (ISO time of the last message, at most once a minute);
   `actuator_state` (event: `syncnow`, `lime-protection`, `pair`, ...)
 - `fhz/set/fht/<addr>/desired-temp` (`5.5`…`30.5`, `on`, `off`), `…/mode` (`AUTO`/`MANU`),
   `…/day-temp`, `…/night-temp`, `…/windowopen-temp`, `…/sync-time` (sets the FHT clock),

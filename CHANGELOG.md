@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- `fht/<addr>/last_seen`: time of the last message from the thermostat (at most once a minute),
+  Home Assistant diagnostic timestamp sensor. Home Assistant does not rewrite unchanged MQTT
+  states, so their `last_reported` is no "last heard".
+
 ## 0.3.0
 
 - Retries only if the thermostat was heard after sending; a silent thermostat's command still

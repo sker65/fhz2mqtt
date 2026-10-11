@@ -1,6 +1,6 @@
 {
   "name": "fhz2mqtt",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Interface between an ELV FHZ1000 PC / FHZ1300 PC (FHT80b thermostats) and MQTT",
   "type": "module",
   "main": "index.js",

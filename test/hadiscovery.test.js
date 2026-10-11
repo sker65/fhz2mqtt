@@ -33,3 +33,9 @@ test('the bridge announces the free FHT buffer', () => {
     const [bridge] = discoveryModel({name: 'fhz', adapter: 'fhz2mqtt', addresses: []});
     assert.equal(bridge.components.fhtbuf.stat_t, 'fhz/status/fhtbuf');
 });
+
+test('each FHT has a last seen timestamp sensor', () => {
+    const [, fht] = discoveryModel({name: 'fhz', adapter: 'fhz2mqtt', addresses: ['1234']});
+    assert.equal(fht.components.last_seen.stat_t, 'fhz/status/fht/1234/last_seen');
+    assert.equal(fht.components.last_seen.dev_cla, 'timestamp');
+});

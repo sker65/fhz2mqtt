@@ -34,7 +34,8 @@ const DISCOVERY_DELAY_MS = 2000;
 const QUEUE_CHECK_MS = 30000; // FHEM's softbuffer timer
 const FHTBUF_TIMEOUT_MS = 2000;
 const BUFFER_WATCH_MS = 5 * 60000; // poll the free FHT buffer also when nothing is queued
-const BUFFER_STUCK_MS = 30 * 60000; // below its empty size this long with nothing pending: warn
+const BUFFER_STUCK_MS = 30 * 60000;
+const LAST_SEEN_MS = 60000; // publish last_seen at most once a minute per thermostat // below its empty size this long with nothing pending: warn
 
 const retries = Number(config.fhtRetries);
 const retryAfter = Number(config.fhtRetryAfter);
@@ -230,6 +231,7 @@ const queue = [];
 let writing = false;
 const frames = new FrameDecoder({onBad: (why, hex) => log.debug(`fhz < ${why}: ${hex}`)});
 const fht = new FhtDecoder();
+const lastSeen = new Map();
 
 function send(fn, data) {
     queue.push(encodeFrame(fn, data));
@@ -269,7 +271,13 @@ function onFrame(frame) {
     }
     addSeen(msg.address);
     if (!msg.fromFhz) {
-        fhtQueue.heard(msg.address, Date.now());
+        const now = Date.now();
+        fhtQueue.heard(msg.address, now);
+        // Home Assistant does not rewrite unchanged MQTT states, so "last heard" needs its own item
+        if (now - (lastSeen.get(msg.address) ?? 0) >= LAST_SEEN_MS) {
+            lastSeen.set(msg.address, now);
+            pubStatus(`fht/${msg.address}/last_seen`, new Date(now).toISOString());
+        }
     }
     if (msg.confirm) {
         for (const e of fhtQueue.confirm(msg.address, msg.cmdRaw, msg.value)) {
