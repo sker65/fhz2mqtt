@@ -33,9 +33,12 @@ jobs:
             echo "::error::tag $TAG does not match package.json version $VERSION"
             exit 1
           fi
+      # trusted publishing (OIDC) needs npm >= 11.5.1; node 22 bundles npm 10
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # trusted publishing (OIDC) when configured on npmjs.com, else the NPM_TOKEN secret (can be removed then)
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
