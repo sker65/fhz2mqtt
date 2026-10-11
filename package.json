@@ -34,7 +34,7 @@
     "FHT80b",
     "868"
   ],
-  "license": "GPL-2.0",
+  "license": "MIT",
   "mqttInterfaces": {
     "spec": "2.0",
     "envPrefix": "FHZ2MQTT",

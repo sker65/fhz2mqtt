@@ -87,4 +87,4 @@ small: do not fire dozens of commands at once.
 
 ## License
 
-GPL-2.0
+MIT, see [LICENSE](LICENSE).
