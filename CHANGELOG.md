@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- `fht/<addr>/pending`: `true` while a command for the thermostat is queued or not confirmed yet
+  (until the FHT confirms it or the queue gives up), Home Assistant binary sensor _Pending_. Shows
+  that a change is on its way during the FHT's receive window delay.
+
 ## 0.4.1
 
 - Release workflow: GitHub Actions publish to npm (trusted publishing via OIDC, token as fallback)
