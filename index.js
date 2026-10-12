@@ -96,6 +96,20 @@ function addSeen(address) {
         adapter.markDiscoveryDirty();
         adapter.publishDiscovery();
     }, DISCOVERY_DELAY_MS);
+    publishPending();
+}
+
+/** `pending` per FHT: a command is queued or not confirmed yet. Published on change only. */
+const pendingShown = new Map();
+
+function publishPending() {
+    for (const address of seen) {
+        const pending = fhtQueue.pending(address);
+        if (pendingShown.get(address) !== pending) {
+            pendingShown.set(address, pending);
+            pubStatus(`fht/${address}/pending`, pending);
+        }
+    }
 }
 
 async function handleSet(parts, value) {
@@ -112,6 +126,7 @@ async function handleSet(parts, value) {
     if (replaced) {
         log.info(`fht ${address} ${label} replaces pending ${replaced.label}`);
     }
+    publishPending();
     pump();
 }
 
@@ -208,6 +223,9 @@ async function pump() {
                     : `fht ${e.address} ${e.label}: no confirmation after ${e.sends} sends, giving up`,
             );
         }
+        if (expired.length) {
+            publishPending();
+        }
         for (const e of due) {
             log.info(`fht ${e.address} ${e.label}${e.sends > 1 ? ` (retry ${e.sends - 1})` : ''}`);
             send('04', e.data);
@@ -279,13 +297,15 @@ function onFrame(frame) {
             pubStatus(`fht/${msg.address}/last_seen`, new Date(now).toISOString());
         }
     }
-    if (msg.confirm) {
-        for (const e of fhtQueue.confirm(msg.address, msg.cmdRaw, msg.value)) {
-            log.debug(`fht ${e.address} ${e.label} confirmed`);
-        }
+    const confirmed = msg.confirm ? fhtQueue.confirm(msg.address, msg.cmdRaw, msg.value) : [];
+    for (const e of confirmed) {
+        log.debug(`fht ${e.address} ${e.label} confirmed`);
     }
     for (const {field, val, retain} of fht.decode(msg)) {
         pubStatus(`fht/${msg.address}/${field}`, val, retain === false ? {retain: false} : {});
+    }
+    if (confirmed.length) {
+        publishPending(); // after the new value, so it is there when `pending` goes off
     }
 }
 

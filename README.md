@@ -54,7 +54,8 @@ Plus the shared options of mqtt-interfaces-core (`-u`, `--ha-discovery`, `-v`, .
 - `fhz/status/fht/<addr>/<field>` (retained, `{val, ts, lc}`): `measured_temp`, `desired_temp`,
   `mode` (`AUTO`/`MANU`/`HOLIDAY`/`HOLIDAY_SHORT`), `actuator` (%), `battery_low`, `window_open`,
   `window_sensor_fault`, `low_temp`, `windowopen_temp`, `day_temp`, `night_temp`, `lowtemp_offset`,
-  `last_seen` (ISO time of the last message, at most once a minute);
+  `last_seen` (ISO time of the last message, at most once a minute), `pending` (`true` while a
+  command for this FHT is queued or not confirmed yet);
   `actuator_state` (event: `syncnow`, `lime-protection`, `pair`, ...)
 - `fhz/set/fht/<addr>/desired-temp` (`5.5`…`30.5`, `on`, `off`), `…/mode` (`AUTO`/`MANU`),
   `…/day-temp`, `…/night-temp`, `…/windowopen-temp`, `…/sync-time` (sets the FHT clock),
@@ -68,7 +69,7 @@ the FHZ waits for the thermostat's receive window.
 
 One device per FHT80b heard (`FHT <addr>`), linked to the bridge device: a climate entity
 (auto / heat, target and current temperature, heating while the valve is open), sensors for
-temperature and valve, binary sensors for battery and window, and buttons for time sync and
+temperature and valve, binary sensors for battery, window and a pending command, and buttons for time sync and
 refresh. Rename devices and entities in Home Assistant; topics stay protocol/address.
 
 Send `sync-time` now and then to keep the FHT clocks right (e.g. a weekly automation pressing the

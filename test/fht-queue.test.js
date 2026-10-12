@@ -100,3 +100,18 @@ test('resetSent sends everything again after a reconnect', () => {
     q.resetSent();
     assert.equal(q.hasDue(1), true);
 });
+
+test('pending lasts from add until confirmation or expiry', () => {
+    const q = new FhtQueue({retries: 0, retryAfterMs: 1000});
+    assert.equal(q.pending('1a2b'), false);
+    q.add('1a2b', data('desired-temp', 21), 'a');
+    q.add('3c4d', data('desired-temp', 19), 'b');
+    assert.equal(q.pending('1a2b'), true);
+    q.take(Infinity, 0);
+    assert.equal(q.pending('1a2b'), true);
+    q.confirm('1a2b', '41', 42);
+    assert.equal(q.pending('1a2b'), false);
+    assert.equal(q.pending('3c4d'), true);
+    q.take(Infinity, 2000);
+    assert.equal(q.pending('3c4d'), false);
+});

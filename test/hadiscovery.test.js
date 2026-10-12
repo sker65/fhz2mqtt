@@ -39,3 +39,9 @@ test('each FHT has a last seen timestamp sensor', () => {
     assert.equal(fht.components.last_seen.stat_t, 'fhz/status/fht/1234/last_seen');
     assert.equal(fht.components.last_seen.dev_cla, 'timestamp');
 });
+
+test('each FHT announces whether a command is pending', () => {
+    const [, fht] = discoveryModel({name: 'fhz', adapter: 'fhz2mqtt', addresses: ['1234']});
+    assert.equal(fht.components.pending.p, 'binary_sensor');
+    assert.equal(fht.components.pending.stat_t, 'fhz/status/fht/1234/pending');
+});
