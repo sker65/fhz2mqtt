@@ -1,5 +1,5 @@
 name: FHZ2MQTT
-version: '0.5.0'
+version: '0.6.0'
 slug: fhz2mqtt
 description: ELV FHZ1000 PC / FHZ1300 PC (FHT80b thermostats) to MQTT and Home Assistant discovery
 url: https://github.com/sker65/fhz2mqtt

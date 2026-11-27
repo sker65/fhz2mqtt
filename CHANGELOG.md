@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.0
 
 - `--serialport tcp://<host>:<port>`: FHZ behind a serial-to-network converter (Lantronix XPort,
   ser2net, ...) over raw TCP, with reconnect and TCP keepalive.
