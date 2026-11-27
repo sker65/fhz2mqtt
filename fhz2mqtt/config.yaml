@@ -1,0 +1,34 @@
+name: FHZ2MQTT
+version: '0.5.0'
+slug: fhz2mqtt
+description: ELV FHZ1000 PC / FHZ1300 PC (FHT80b thermostats) to MQTT and Home Assistant discovery
+url: https://github.com/sker65/fhz2mqtt
+arch:
+  - aarch64
+  - amd64
+init: false
+uart: true
+udev: true
+services:
+  - mqtt:want
+options:
+  serialport: auto
+  fht_buffer_check: true
+  fht_retries: 2
+  fht_retry_after: 240
+  instance_name: fhz
+  log_level: info
+  ha_prefix: homeassistant
+schema:
+  serialport: str
+  fht_code: match(^[0-9A-Fa-f]{2}$)?
+  only: str?
+  fht_buffer_check: bool
+  fht_retries: int(0,5)
+  fht_retry_after: int(120,)
+  instance_name: match(^[A-Za-z0-9_-]+$)
+  mqtt_url: str?
+  mqtt_username: str?
+  mqtt_password: password?
+  log_level: list(error|warn|info|debug)
+  ha_prefix: str

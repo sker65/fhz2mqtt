@@ -1,5 +1,7 @@
 # fhz2mqtt
 
+[![Add the app repository to your Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fsker65%2Ffhz2mqtt)
+
 Bridges an ELV **FHZ1000 PC / FHZ1300 PC** to MQTT, following the
 [mqtt-smarthome](https://github.com/mqtt-smarthome/mqtt-smarthome) convention, and announces the
 **FHT80b** room thermostats it hears to Home Assistant via MQTT discovery.
@@ -34,17 +36,39 @@ As a systemd service: `sudo node index.js --install -n fhz -s auto -u mqtt://bro
 restart). Only one program can open the FHZ: stop FHEM (or whatever else uses
 it) first.
 
+### Home Assistant app
+
+On Home Assistant OS (or any installation with the Supervisor) fhz2mqtt runs as an app:
+
+1. Click the badge at the top, or open **Settings → Apps → App Store**, menu **Repositories**, and
+   add `https://github.com/sker65/fhz2mqtt`.
+2. Install **FHZ2MQTT**. With the Mosquitto broker app and the MQTT integration set up, it uses that
+   broker by itself.
+3. Keep `serialport: auto` for an FHZ on USB, or set a device path or `tcp://host:port` (see
+   [FHZ on the network](#fhz-on-the-network)), then start the app.
+
+The app's **Documentation** tab ([`fhz2mqtt/DOCS.md`](fhz2mqtt/DOCS.md)) lists all options. It
+installs the npm release of the same version, so the app and the npm package are always in step.
+
 ## Options
 
-| Option               | Env                         | Default        | Meaning                                                             |
-| -------------------- | --------------------------- | -------------- | ------------------------------------------------------------------- |
-| `-s, --serialport`   | `FHZ2MQTT_SERIALPORT`       | `/dev/ttyUSB0` | FHZ serial port, or `auto` (`/dev/serial/by-id/*ELV*FHZ*`)          |
-| `--fht-code`         | `FHZ2MQTT_FHT_CODE`         | –              | central code (2 hex digits) written on connect; unset: keep         |
-| `--only`             | `FHZ2MQTT_ONLY`             | –              | comma-separated FHT addresses to handle, others are ignored         |
-| `--fht-buffer-check` | `FHZ2MQTT_FHT_BUFFER_CHECK` | `true`         | ask the FHZ for its free FHT buffer, hold what doesn't fit          |
-| `--fht-retries`      | `FHZ2MQTT_FHT_RETRIES`      | `2`            | resend unconfirmed FHT commands at most this often (0 = off, max 5) |
-| `--fht-retry-after`  | `FHZ2MQTT_FHT_RETRY_AFTER`  | `240`          | seconds to wait for the confirmation before resending (min 120)     |
-| `-n, --name`         | `FHZ2MQTT_NAME`             | `fhz`          | topic prefix                                                        |
+| Option               | Env                         | Default        | Meaning                                                                       |
+| -------------------- | --------------------------- | -------------- | ----------------------------------------------------------------------------- |
+| `-s, --serialport`   | `FHZ2MQTT_SERIALPORT`       | `/dev/ttyUSB0` | FHZ serial port, `tcp://host:port`, or `auto` (`/dev/serial/by-id/*ELV*FHZ*`) |
+| `--fht-code`         | `FHZ2MQTT_FHT_CODE`         | –              | central code (2 hex digits) written on connect; unset: keep                   |
+| `--only`             | `FHZ2MQTT_ONLY`             | –              | comma-separated FHT addresses to handle, others are ignored                   |
+| `--fht-buffer-check` | `FHZ2MQTT_FHT_BUFFER_CHECK` | `true`         | ask the FHZ for its free FHT buffer, hold what doesn't fit                    |
+| `--fht-retries`      | `FHZ2MQTT_FHT_RETRIES`      | `2`            | resend unconfirmed FHT commands at most this often (0 = off, max 5)           |
+| `--fht-retry-after`  | `FHZ2MQTT_FHT_RETRY_AFTER`  | `240`          | seconds to wait for the confirmation before resending (min 120)               |
+| `-n, --name`         | `FHZ2MQTT_NAME`             | `fhz`          | topic prefix                                                                  |
+
+### FHZ on the network
+
+If the FHZ hangs on a serial-to-network converter (Lantronix XPort, ser2net, ESP-Link, ...), give
+its address as `-s tcp://<host>:<port>` (XPort default port: `10001`). The converter must pass the
+bytes through unchanged: raw TCP, not Telnet or RFC 2217, serial side 9600 baud 8N1 without flow
+control. fhz2mqtt reconnects every 10 s when the connection drops and uses TCP keepalive to notice
+a converter that disappeared. Most converters accept only one connection at a time.
 
 Plus the shared options of mqtt-interfaces-core (`-u`, `--ha-discovery`, `-v`, ...; see `--help`).
 

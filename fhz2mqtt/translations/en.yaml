@@ -1,0 +1,39 @@
+configuration:
+  serialport:
+    name: FHZ connection
+    description: >-
+      "auto" finds a USB FHZ (/dev/serial/by-id/*ELV*FHZ*), or a device path such as
+      /dev/ttyUSB0, or tcp://host:port for an FHZ on a serial-to-network converter (XPort, ser2net).
+  fht_code:
+    name: Central code
+    description: >-
+      Two hex digits written to the FHZ on connect. Leave empty to keep the paired code. A new code
+      means every FHT80b must pair again.
+  only:
+    name: Only these thermostats
+    description: Comma-separated FHT addresses (e.g. 1a2b,3c4d); all others are ignored. Empty handles all.
+  fht_buffer_check:
+    name: FHT buffer check
+    description: Ask the FHZ for its free FHT buffer before sending and hold commands that don't fit.
+  fht_retries:
+    name: Retries
+    description: Resend a command the thermostat did not confirm, at most this often (0 = off).
+  fht_retry_after:
+    name: Retry after (s)
+    description: Seconds to wait for the confirmation before resending (at least 120).
+  instance_name:
+    name: Instance name
+    description: MQTT topic prefix and client id.
+  mqtt_url:
+    name: MQTT URL
+    description: Only for an external broker, e.g. mqtt://broker:1883. Empty uses the Home Assistant MQTT service.
+  mqtt_username:
+    name: MQTT username
+  mqtt_password:
+    name: MQTT password
+  log_level:
+    name: Log level
+    description: debug also logs the raw FHZ traffic.
+  ha_prefix:
+    name: Discovery prefix
+    description: Home Assistant MQTT discovery prefix.

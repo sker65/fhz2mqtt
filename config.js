@@ -6,7 +6,8 @@ export const OPTIONS = {
     serialport: {
         alias: 's',
         type: 'string',
-        describe: 'serial port of the FHZ1000 PC / FHZ1300 PC, or "auto" to find it (see --discover)',
+        describe:
+            'serial port of the FHZ1000 PC / FHZ1300 PC, tcp://host:port for a serial-to-network converter (raw TCP, e.g. XPort, ser2net), or "auto" to find it (see --discover)',
         default: '/dev/ttyUSB0',
         discover: true,
     },
@@ -43,6 +44,7 @@ export default parseConfig({
     examples: [
         ['$0 --discover', 'list the FHZ sticks plugged into this host and exit'],
         ['$0 -s /dev/ttyUSB0 -u mqtt://broker', 'run in the foreground'],
+        ['$0 -s tcp://192.0.2.10:10001 -u mqtt://broker', 'FHZ behind a serial-to-network converter'],
         ['sudo $0 --install -n fhz -s auto -u mqtt://broker', 'install as service fhz2mqtt@fhz'],
     ],
 });

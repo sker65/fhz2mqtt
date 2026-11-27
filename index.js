@@ -11,6 +11,7 @@ import {FhtDecoder, fhtCommand, parseFhtFrame} from './lib/fht.js';
 import {discoveryModel} from './lib/hadiscovery.js';
 import {handle as handleInstall} from './lib/install.js';
 import {discoveryHint} from './lib/discovery.js';
+import {TcpPort, parseTcpAddress} from './lib/transport.js';
 
 // --discover / --serialport auto, before the installer so --install persists the by-id path
 if (config.discover || config.serialport === 'auto') {
@@ -25,6 +26,14 @@ if (config.discover || config.serialport === 'auto') {
         discoveryLog.error('--serialport auto:', err.message);
         process.exit(1);
     }
+}
+
+let tcpAddress = null;
+try {
+    tcpAddress = parseTcpAddress(config.serialport);
+} catch (err) {
+    console.error('--serialport:', err.message);
+    process.exit(1);
 }
 
 handleInstall(config);
@@ -239,7 +248,7 @@ async function pump() {
 }
 
 /*
- * Serial port and write queue. The FHZ discards frames that follow each other closer than
+ * Serial port (or tcp:// connection to a serial-to-network converter) and write queue. The FHZ discards frames that follow each other closer than
  * 250 ms; it queues FHT commands itself until the thermostat's receive window.
  */
 let port = null;
@@ -320,7 +329,9 @@ function scheduleReconnect() {
 }
 
 function open() {
-    port = new SerialPort({path: config.serialport, baudRate: 9600, autoOpen: false});
+    port = tcpAddress
+        ? new TcpPort(tcpAddress)
+        : new SerialPort({path: config.serialport, baudRate: 9600, autoOpen: false});
     port.on('data', (chunk) => frames.push(chunk).forEach(onFrame));
     port.on('close', () => {
         log.warn('fhz closed', config.serialport);

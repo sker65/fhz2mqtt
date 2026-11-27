@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- `--serialport tcp://<host>:<port>`: FHZ behind a serial-to-network converter (Lantronix XPort,
+  ser2net, ...) over raw TCP, with reconnect and TCP keepalive.
+- Home Assistant app (Supervisor / Home Assistant OS): add this repository to the app store and
+  install **FHZ2MQTT**; it uses the Mosquitto broker app by itself.
+
 ## 0.5.0
 
 - `fht/<addr>/pending`: `true` while a command for the thermostat is queued or not confirmed yet

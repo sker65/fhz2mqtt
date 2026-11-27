@@ -10,10 +10,16 @@ behaviour comes from [mqtt-interfaces-core](https://github.com/hobbyquaker/mqtt-
 - `index.js` — `createAdapter()` plus the serial part: open/reconnect (10 s), FHZ init sequence,
   write queue (250 ms gap, the FHZ drops faster frames), frames → FHT items → `pubStatus()`,
   `set/fht/<addr>/<cmd>` → FHZ send frame, debounced discovery when a new FHT is heard.
+- `lib/transport.js` — `tcp://host:port` parsing and `TcpPort`, a raw TCP socket with the
+  SerialPort subset `index.js` uses (FHZ behind XPort, ser2net, ...).
 - `lib/frame.js` — pure: FHZ framing (`0x81 len fn crc data`), stream decoder.
 - `lib/fhz.js` — pure: FHZ register commands and init sequence (from FHEM's `00_FHZ.pm`).
 - `lib/fht.js` — pure: FHT frames → items, FHT commands (from FHEM's `11_FHT.pm`).
 - `lib/hadiscovery.js` — pure: seen FHT addresses → HA device blocks.
+- `fhz2mqtt/` — Home Assistant app (`config.yaml`, `Dockerfile`, `run.sh`, `DOCS.md`,
+  `translations/`); `repository.yaml` makes the repo an app repository. The Supervisor builds with
+  `fhz2mqtt/` as the context, so the image installs `fhz2mqtt@<config.yaml version>` from npm
+  instead of copying the checkout.
 - `test/` — node:test unit tests for every `lib/` module (`npm test`).
 
 ## Practices
@@ -26,9 +32,11 @@ behaviour comes from [mqtt-interfaces-core](https://github.com/hobbyquaker/mqtt-
 
 ## Release
 
-1. Bump `version` in `package.json` (`npm version --no-git-tag-version <x.y.z>` keeps the lockfile in sync) and add a
-   `## x.y.z` section to `CHANGELOG.md`.
-2. Commit, then tag `x.y.z` or `vx.y.z` and push the tag (or create the release on GitHub with a new tag).
+1. Bump `version` in `package.json` (`npm version --no-git-tag-version <x.y.z>` keeps the lockfile in sync) and in
+   `fhz2mqtt/config.yaml` (a test checks they match), and add a `## x.y.z` section to `CHANGELOG.md`.
+2. Commit, then tag `x.y.z` or `vx.y.z` and push commit and tag together (`git push --follow-tags`). The
+   Supervisor offers the app update as soon as `config.yaml` changes on `main`, and its build needs the
+   npm release, so don't push the version bump without the tag.
 3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs lint and tests, publishes to npm
    (trusted publishing via OIDC, no token; with provenance) and creates the GitHub release with notes from `.github/release-notes.js`
    (CHANGELOG section plus the commits since the previous tag); a release created by hand only gets its notes
